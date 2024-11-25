@@ -35,7 +35,7 @@ public class Main {
                     Grid grid = getGridByValue(value);
                     if (grid != null) {
                         grids[i][j] = grid.getGrid();
-                        countCharacters(grid.getGrid(), characterFrequency); // Count characters here
+                        countCharacters(grid.getGrid(), characterFrequency);
                     } else {
                         System.out.println("Invalid grid value: " + value);
                         grids[i][j] = new int[][] {
@@ -80,7 +80,6 @@ public class Main {
         }
     }
 
-    // Helper method to count characters in a single grid
     private static void countCharacters(int[][] grid, Map<Integer, Integer> frequencyMap) {
         for (int[] row : grid) {
             for (int cell : row) {
@@ -91,7 +90,6 @@ public class Main {
         }
     }
 
-    // Helper method to count walkable areas and find the most frequent character in a single region
     private static Result countWalkableAreasAndFindMostFrequentCharacter(int[][][][] grids) {
         int rows = grids.length;
         int cols = grids[0].length;
@@ -169,7 +167,7 @@ public class Main {
                 case 7: return Grid.SEVEN;
                 case 8: return Grid.EIGHT;
                 case 9: return Grid.NINE;
-                default: return null; // Invalid number
+                default: return null;
             }
         } catch (NumberFormatException e) {
             switch (value) {
@@ -190,7 +188,6 @@ public class Main {
         }
     }
 
-    // Helper class to store the result
     private static class Result {
         int walkableAreas;
         int mostUsedCharacter;
