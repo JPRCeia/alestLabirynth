@@ -4,7 +4,7 @@ import java.util.*;
 public class Main {
 
     public static void main(String[] args) {
-        String filePath = "labTeste/caso4_4.txt";
+        String filePath = "labTeste/caso40_4.txt";
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String sizeLine = reader.readLine();
             if (sizeLine == null) {
@@ -65,14 +65,11 @@ public class Main {
                 }
             }
 
-            // Count walkable areas
-            int walkableAreas = countWalkableAreas(grids);
-            System.out.println("Walkable areas: " + walkableAreas);
-
-            // Find and print the most used character
-            int mostUsedCharacter = findMostFrequentCharacter(characterFrequency);
-            System.out.println("Most used character: " + mostUsedCharacter +
-                    " (used " + characterFrequency.get(mostUsedCharacter) + " times)");
+            // Count walkable areas and find the most used character in a single region
+            Result result = countWalkableAreasAndFindMostFrequentCharacter(grids);
+            System.out.println("Walkable areas: " + result.walkableAreas);
+            System.out.println("Most used character in a single region: " + result.mostUsedCharacter +
+                    " (used " + result.maxCount + " times)");
 
         } catch (IOException e) {
             System.err.println("Error reading the file: " + e.getMessage());
@@ -94,41 +91,36 @@ public class Main {
         }
     }
 
-    // Helper method to find the most frequent character
-    private static int findMostFrequentCharacter(Map<Integer, Integer> frequencyMap) {
-        int mostUsedCharacter = -1;
-        int maxCount = 0;
-
-        for (Map.Entry<Integer, Integer> entry : frequencyMap.entrySet()) {
-            if (entry.getValue() > maxCount) {
-                mostUsedCharacter = entry.getKey();
-                maxCount = entry.getValue();
-            }
-        }
-
-        return mostUsedCharacter;
-    }
-
-    // Helper method to count walkable areas using flood fill
-    private static int countWalkableAreas(int[][][][] grids) {
+    // Helper method to count walkable areas and find the most frequent character in a single region
+    private static Result countWalkableAreasAndFindMostFrequentCharacter(int[][][][] grids) {
         int rows = grids.length;
         int cols = grids[0].length;
         boolean[][] visited = new boolean[rows * 3][cols * 3];
         int areas = 0;
+        int maxCount = 0;
+        int mostUsedCharacter = -1;
 
         for (int i = 0; i < rows * 3; i++) {
             for (int j = 0; j < cols * 3; j++) {
                 if (isWalkable(grids, i, j) && !visited[i][j]) {
-                    floodFill(grids, visited, i, j);
+                    Map<Integer, Integer> regionFrequency = new HashMap<>();
+                    floodFill(grids, visited, i, j, regionFrequency);
                     areas++;
+
+                    for (Map.Entry<Integer, Integer> entry : regionFrequency.entrySet()) {
+                        if (entry.getValue() > maxCount) {
+                            maxCount = entry.getValue();
+                            mostUsedCharacter = entry.getKey();
+                        }
+                    }
                 }
             }
         }
 
-        return areas;
+        return new Result(areas, mostUsedCharacter, maxCount);
     }
 
-    private static void floodFill(int[][][][] grids, boolean[][] visited, int x, int y) {
+    private static void floodFill(int[][][][] grids, boolean[][] visited, int x, int y, Map<Integer, Integer> regionFrequency) {
         int rows = grids.length * 3;
         int cols = grids[0].length * 3;
         if (x < 0 || x >= rows || y < 0 || y >= cols || !isWalkable(grids, x, y) || visited[x][y]) {
@@ -137,10 +129,15 @@ public class Main {
 
         visited[x][y] = true;
 
-        floodFill(grids, visited, x + 1, y);
-        floodFill(grids, visited, x - 1, y);
-        floodFill(grids, visited, x, y + 1);
-        floodFill(grids, visited, x, y - 1);
+        int cellValue = getCellValue(grids, x, y);
+        if (cellValue != 0 && cellValue != 1) {
+            regionFrequency.put(cellValue, regionFrequency.getOrDefault(cellValue, 0) + 1);
+        }
+
+        floodFill(grids, visited, x + 1, y, regionFrequency);
+        floodFill(grids, visited, x - 1, y, regionFrequency);
+        floodFill(grids, visited, x, y + 1, regionFrequency);
+        floodFill(grids, visited, x, y - 1, regionFrequency);
     }
 
     private static boolean isWalkable(int[][][][] grids, int x, int y) {
@@ -149,6 +146,14 @@ public class Main {
         int subX = x % 3;
         int subY = y % 3;
         return grids[gridX][gridY][subX][subY] != 1;
+    }
+
+    private static int getCellValue(int[][][][] grids, int x, int y) {
+        int gridX = x / 3;
+        int gridY = y / 3;
+        int subX = x % 3;
+        int subY = y % 3;
+        return grids[gridX][gridY][subX][subY];
     }
 
     public static Grid getGridByValue(String value) {
@@ -182,6 +187,19 @@ public class Main {
                 case "F": return Grid.F;
                 default: return null;
             }
+        }
+    }
+
+    // Helper class to store the result
+    private static class Result {
+        int walkableAreas;
+        int mostUsedCharacter;
+        int maxCount;
+
+        Result(int walkableAreas, int mostUsedCharacter, int maxCount) {
+            this.walkableAreas = walkableAreas;
+            this.mostUsedCharacter = mostUsedCharacter;
+            this.maxCount = maxCount;
         }
     }
 }
