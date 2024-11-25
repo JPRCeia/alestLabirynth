@@ -65,7 +65,6 @@ public class Main {
                 }
             }
 
-            // Count walkable areas and find the most used character in a single region
             Result result = countWalkableAreasAndFindMostFrequentCharacter(grids);
             System.out.println("Walkable areas: " + result.walkableAreas);
             System.out.println("Most used character in a single region: " + result.mostUsedCharacter +
